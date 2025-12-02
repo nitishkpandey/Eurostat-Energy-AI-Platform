@@ -167,7 +167,7 @@ with tab2:
 
 # TAB 3 — HEATMAP
 with tab3:
-    st.header("GEP Heatmap")
+    st.header("Gross Electricity Production (GEP) Heatmap")
 
     df_heat = load_heatmap_data()
 
