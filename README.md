@@ -251,6 +251,8 @@ This project is fully open for learning and experimentation.
 # **Contact**
 
 For questions or collaboration:
-**Nitish Kumar Pandey / linkedin: linkedin.com/in/nitishkpandey **
+
+**Nitish Kumar Pandey** 
+**Linkedin: linkedin.com/in/nitishkpandey**
 
 ---
