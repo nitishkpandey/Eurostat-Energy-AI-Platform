@@ -1,4 +1,4 @@
-#  **Eurostat Energy Intelligence Platform**
+#  **Eurostat Energy AI Platform**
 
 
 A fully Dockerized ETL + Data Warehouse + Analytics + Forecasting + AI Insights platform built using Python, PostgreSQL, and Streamlit.  
