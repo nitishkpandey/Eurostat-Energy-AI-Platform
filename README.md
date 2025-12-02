@@ -1,94 +1,115 @@
-#  **Eurostat Energy ETL & Analytics Platform**
+#  **Eurostat Energy Intelligence Platform**
 
-A fully Dockerized **ETL + Data Warehouse + Analytics Dashboard** built using Python, PostgreSQL, and Streamlit.
-This project extracts real-world European energy statistics from the **Eurostat REST API**, loads them into a Postgres database, and serves a modern interactive dashboard for exploring electricity production and final energy consumption across Europe.
+
+A fully Dockerized ETL + Data Warehouse + Analytics + Forecasting + AI Insights platform built using Python, PostgreSQL, and Streamlit.  
+This project extracts real-world European energy statistics from the Eurostat REST API, loads them into a PostgreSQL database, and serves an interactive dashboard for exploring electricity production and final energy consumption across Europe.
 
 This is a complete, end-to-end, industry-style data engineering project showcasing:
 
-* Real API ingestion
-* ETL pipeline (Extract → Transform → Load)
-* Containerization (Docker Compose)
-* Data warehousing (PostgreSQL)
-* Analytics dashboard (Streamlit + Plotly)
-* Automated visualizations (Matplotlib/Seaborn)
+- Real API ingestion  
+- ETL pipeline (Extract → Transform → Load)  
+- Containerization (Docker Compose)  
+- Data warehousing (PostgreSQL)  
+- Analytics dashboard (Streamlit + Plotly)  
+- Automated visualizations (Matplotlib/Seaborn)  
+- Machine learning forecasting (XGBoost + Exponential Smoothing)  
+- AI Insights assistant (RAG + semantic search + trend analysis)  
 
 ---
 
-#  **Tech Stack**
+# Tech Stack
 
-### **Backend & ETL**
+## Backend & ETL
+- Python 3.11  
+- Pandas  
+- SQLAlchemy  
+- Requests  
+- Python-dotenv  
+- Docker & Docker Compose  
 
-* Python 3.11
-* Pandas
-* SQLAlchemy
-* Requests
-* Python-dotenv
-* Docker & Docker Compose
+## Storage
+- PostgreSQL 16  
+- PGAdmin 4  
 
-### **Storage**
+## Analytics
+- Streamlit  
+- Plotly  
+- Matplotlib / Seaborn  
 
-* PostgreSQL 16
-* PGAdmin 4
+## Machine Learning
+- XGBoost  
+- Statsmodels (Exponential Smoothing)  
 
-### **Analytics**
-
-* Streamlit
-* Plotly
-* Matplotlib / Seaborn
-
----
-
-#  **Eurostat API — Data Sources**
-
-The ETL pipeline retrieves official European energy statistics from the **Eurostat REST API** (no authentication required).
-
-### **Datasets Used**
-
-####  **1. nrg_cb_e** — Electricity Supply / Transformation / Consumption
-
-Extracted Indicator:
-
-* `GEP` — Gross Electricity Production
-
-####  **2. ten00124** — Final Energy Consumption by Sector
-
-Extracted Indicators:
-
-* `FC_E` — Final Energy Consumption (All sectors)
-* `FC_IND_E` — Industry
-* `FC_TRA_E` — Transport
-* `FC_OTH_CP_E` — Commercial & Public Services
-* `FC_OTH_HH_E` — Households
-
-These indicators become the foundation for country-level analytics and energy dashboards.
+## AI / RAG
+- Embeddings-based search  
+- Trend-based reasoning engine  
+- Natural-language insights generation  
 
 ---
 
-#  **Project Structure**
+# Eurostat API — Data Sources
+
+The ETL pipeline retrieves official European energy statistics from the Eurostat REST API (no authentication required).
+
+## Datasets Used
+
+### 1. nrg_cb_e — Electricity Supply / Transformation / Consumption
+Indicator:
+- GEP — Gross Electricity Production
+
+### 2. ten00124 — Final Energy Consumption by Sector
+Indicators:
+- FC_E — Final Energy Consumption (All sectors)  
+- FC_IND_E — Industry  
+- FC_TRA_E — Transport  
+- FC_OTH_CP_E — Commercial & Public Services  
+- FC_OTH_HH_E — Households  
+
+---
+
+# Project Structure
+
+
 
 ```
-Eurostat-Energy-ETL-Pipeline/
+EUROSTAT-ENERGY-ETL-PIPELINE/
+│
+├── .venv/
 │
 ├── app/
-│   └── streamlit_app.py          # Interactive analytics dashboard
+│ └── streamlit_app.py
 │
 ├── etl/
-│   └── main.py                   # ETL pipeline (extract → transform → load)
+│ └── main.py
 │
-├── viz/
-│   └── viz_utils.py              # Automated visualization generator
+├── llm_app/
+│ ├── init.py
+│ ├── build_knowledge_base.py
+│ ├── chatbot.py
+│ └── rag_engine.py
 │
-├── outputs/                      # Auto-generated charts
+├── ml/
+│ ├── init.py
+│ ├── forecast_utils.py
+│ └── train_forecast_model.py
+│
+├── outputs/
+│ ├── DE_GEP_trend.png
+│ ├── heatmap_GEP.png
+│ └── top_10_GEP_2024.png
 │
 ├── postgres/
-│   └── init.sql                  # Creates DB, roles, privileges
+│ └── init.sql
 │
-├── Dockerfile                    # Base image for ETL + Streamlit containers
-├── docker-compose.yml            # Orchestrates DB, ETL, PGAdmin, Streamlit
+├── viz/
+│ └── viz_utils.py
 │
-├── requirements.txt              # Python dependencies
-├── .env                          # Database credentials (not committed)
-└── .gitignore                    # Prevents committing sensitive files
+├── .env
+├── .gitignore
+├── docker-compose.yml
+├── Dockerfile
+├── README.md
+└── requirements.txt
 ```
 
 ---
@@ -232,12 +253,12 @@ outputs/
 
 # **Insights from the Data**
 
-Some example findings (depending on the latest API update):
+**Example findings:**
 
-* EU aggregates (EU27_2020, EA20) show the highest recorded GEP
-* Germany’s energy production peaked around ~2017 and declined slightly afterward
-* Some smaller/non-EU countries report sparse data
-* Sectoral consumption patterns vary sharply across Europe
+- EU aggregates (EU27_2020, EA20) report the highest GEP values  
+- Germany’s GEP increased until ~2017 and stabilized afterward  
+- Transport and household sectors dominate consumption in many regions  
+- Some non-EU countries show sparse data coverage  
 
 ---
 
