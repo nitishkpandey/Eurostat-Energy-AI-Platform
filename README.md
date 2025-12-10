@@ -72,7 +72,7 @@ Indicators:
 
 
 ```
-EUROSTAT-ENERGY-ETL-PIPELINE/
+EUROSTAT-ENERGY-AI-PLATFORM/
 │
 ├── .venv/
 │
