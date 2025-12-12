@@ -72,15 +72,30 @@ Indicators:
 
 
 ```
+<<<<<<< Updated upstream
 EUROSTAT-ENERGY-AI-PLATFORM/
 │
 ├── .venv/
+=======
+Eurostat-Energy-AI-Platform/
+>>>>>>> Stashed changes
 │
 ├── app/
 │ └── streamlit_app.py
 │
 ├── etl/
+<<<<<<< Updated upstream
 │ └── main.py
+=======
+│   ├── config.py                 # Configuration & environment loading
+│   ├── extract.py                # API data fetching
+│   ├── transform.py              # Data cleaning & transformation logic
+│   ├── load.py                   # Database connection & loading
+│   └── main.py                   # Orchestrator script
+│
+├── tests/
+│   └── test_transform.py         # Unit tests for transformation logic
+>>>>>>> Stashed changes
 │
 ├── llm_app/
 │ ├── init.py
@@ -104,12 +119,18 @@ EUROSTAT-ENERGY-AI-PLATFORM/
 ├── viz/
 │ └── viz_utils.py
 │
+<<<<<<< Updated upstream
 ├── .env
 ├── .gitignore
 ├── docker-compose.yml
 ├── Dockerfile
 ├── README.md
 └── requirements.txt
+=======
+├── requirements.txt              # Pinned Python dependencies
+├── .env                          # Database credentials (not committed)
+└── .gitignore                    # Prevents committing sensitive files
+>>>>>>> Stashed changes
 ```
 
 ---
@@ -180,8 +201,8 @@ Everything is fully dynamic and rendered using **Plotly**.
 ## 1. Clone the repository
 
 ```bash
-git clone https://github.com/your-username/Eurostat-Energy-ETL-Pipeline.git
-cd Eurostat-Energy-ETL-Pipeline
+git clone https://github.com/your-username/Eurostat-Energy-AI-Platform.git
+cd Eurostat-Energy-AI-Platform
 ```
 
 ---
@@ -232,6 +253,18 @@ Once everything starts, open:
 ```bash
 docker compose down -v
 ```
+
+---
+
+# **Running Tests**
+
+To ensure the data transformation logic is working correctly, you can run the unit tests inside the Docker container:
+
+```bash
+docker compose run etl pytest tests/
+```
+
+This guarantees that tests run in the exact same environment as the production code.
 
 ---
 
