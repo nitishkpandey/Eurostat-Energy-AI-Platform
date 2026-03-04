@@ -89,8 +89,8 @@ def _train_xgb(series: pd.Series, horizon: int = 5, test_size: int = 5):
         year = last_year + step
 
         # Build feature row based on latest history_values
-        feats = {}
-        feats["year"] = year
+        feats: dict[str, float] = {}
+        feats["year"] = float(year)
 
         for lag in range(1, 4):
             if len(history_values) >= lag:

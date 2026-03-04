@@ -36,9 +36,9 @@ services:
         python viz/viz_utils.py
       "
 
-  streamlit:
+  api:
     build: .
-    container_name: eurostat_streamlit
+    container_name: eurostat_api
     depends_on:
       - db
     env_file:
@@ -46,11 +46,22 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
     ports:
-      - "8501:8501"
+      - "8000:8000"
     volumes:
       - .:/app
-    command: >
-      streamlit run app/streamlit_app.py --server.port=8501 --server.address=0.0.0.0
+    command: uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: eurostat_frontend
+    depends_on:
+      - api
+    ports:
+      - "3000:80"
+    restart: unless-stopped
 
   pgadmin:
     image: dpage/pgadmin4

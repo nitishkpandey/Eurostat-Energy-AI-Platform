@@ -98,7 +98,7 @@ __pypackages__/
 celerybeat-schedule
 celerybeat.pid
 
-# SageMath parsed files
+# SageMaker parsed files
 *.sage.py
 
 # Environments
@@ -137,3 +137,7 @@ cython_debug/
 # OS specific
 .DS_Store
 Thumbs.db
+
+# Frontend build artifacts and dependencies
+frontend/node_modules/
+frontend/dist/
