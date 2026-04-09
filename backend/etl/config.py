@@ -3,8 +3,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 # Load .env from project root
-# Assuming this file is in etl/config.py, the root is two levels up
-PROJECT_ROOT = Path(__file__).resolve().parent.parent
+# backend/etl/config.py -> project root is three levels up
+PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 DOTENV_PATH = PROJECT_ROOT / '.env'
 load_dotenv(DOTENV_PATH)
 

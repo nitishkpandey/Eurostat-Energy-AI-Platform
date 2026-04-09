@@ -1,32 +1,11 @@
 from __future__ import annotations
 
-import os
 from typing import List, Dict
 
-import numpy as np
 import pandas as pd
-from sqlalchemy import create_engine, text
+from sqlalchemy import text
 
-
-# -----------------------------------------------------------
-# DB CONNECTION
-# -----------------------------------------------------------
-def get_engine():
-    """
-    Use the same DB_* environment variables as the ETL and Streamlit app.
-    Defaults match your postgres/init.sql + .env:
-      DB_USER=energy_user
-      DB_PASS=energy_pass
-      DB_NAME=energy
-    """
-    db_user = os.getenv("DB_USER", "energy_user")
-    db_pass = os.getenv("DB_PASS", "energy_pass")
-    db_host = os.getenv("DB_HOST", "db")
-    db_port = os.getenv("DB_PORT", "5432")
-    db_name = os.getenv("DB_NAME", "energy")
-
-    url = f"postgresql+psycopg2://{db_user}:{db_pass}@{db_host}:{db_port}/{db_name}"
-    return create_engine(url)
+from backend.core.database import get_engine
 
 
 # -----------------------------------------------------------
@@ -46,14 +25,6 @@ def _indicator_name(indicator_code: str) -> str:
         "FC_OTH_HH_E": "Final Energy Consumption – Households",
     }
     return mapping.get(indicator_code, indicator_code)
-
-
-def _country_name(geo_code: str) -> str:
-    """
-    Optionally map country codes to full names.
-    For now we just return the geo_code.
-    """
-    return geo_code
 
 
 def _trend_label(slope: float, threshold: float = 0.01) -> str:
@@ -145,7 +116,6 @@ def build_insights_df() -> pd.DataFrame:
             growth_pct = (end_val - start_val) / start_val
 
         indicator_h = _indicator_name(indicator)
-        country_h = _country_name(geo)
         trend = _trend_label(slope)
 
         if growth_pct is not None:
@@ -154,7 +124,7 @@ def build_insights_df() -> pd.DataFrame:
             change_phrase = f"{end_val - start_val:+.2f} units over {n_years} years"
 
         insight_text = (
-            f"For {country_h}, the indicator '{indicator_h}' changed from "
+            f"For {geo}, the indicator '{indicator_h}' changed from "
             f"{start_val:.2f} in {start_year} to {end_val:.2f} in {end_year} "
             f"({change_phrase}). Overall trend: {trend}."
         )

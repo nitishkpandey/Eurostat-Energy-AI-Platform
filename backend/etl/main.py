@@ -1,9 +1,10 @@
 import argparse
 import pandas as pd
-from etl.config import DATASETS
-from etl.extract import fetch_dataset
-from etl.transform import transform_dataset
-from etl.load import wait_for_db, get_engine, init_db, load_data_to_db
+
+from .config import DATASETS
+from .extract import fetch_dataset
+from .load import get_engine, init_db, load_data_to_db, wait_for_db
+from .transform import transform_dataset
 
 def main():
     # --- Command Line Interface (CLI) argument for load mode ---

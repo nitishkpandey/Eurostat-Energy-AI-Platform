@@ -17,8 +17,7 @@ def _fastest_rising_gep_answer() -> str:
         return "I couldn't find any processed GEP data. Please run the ETL pipeline first."
 
     # Filter rows where indicator is GEP
-    gep_mask = df["indicator"].isin(["nrg_cb_e", "GEP"])
-    sub = df[gep_mask].copy()
+    sub = df[df["indicator"] == "GEP"].copy()
 
     if sub.empty:
         return "I couldn't find Gross Electricity Production (GEP) in the dataset."
@@ -48,7 +47,7 @@ def _fastest_rising_gep_answer() -> str:
 
 def answer_question(question: str) -> Dict[str, str]:
     """
-    Main entrypoint used by Streamlit.
+    Main entrypoint used by the backend API.
 
     It detects special intent-based questions first,
     then falls back to semantic similarity.

@@ -89,8 +89,8 @@ def _train_xgb(series: pd.Series, horizon: int = 5, test_size: int = 5):
         year = last_year + step
 
         # Build feature row based on latest history_values
-        feats = {}
-        feats["year"] = year
+        feats: dict[str, float] = {}
+        feats["year"] = float(year)
 
         for lag in range(1, 4):
             if len(history_values) >= lag:
@@ -155,7 +155,7 @@ def run_forecast(
     horizon: int = 5,
 ):
     """
-    Public API used by Streamlit.
+    Forecasting entrypoint used by the backend API.
 
     Parameters
     ----------
@@ -164,7 +164,7 @@ def run_forecast(
     country : str
         Country code (e.g. 'DE').
     indicator : str
-        Indicator code (e.g. 'nrg_cb_e').
+        Indicator code (e.g. 'GEP').
     horizon : int
         Number of future years to forecast.
 
@@ -185,8 +185,8 @@ def run_forecast(
     test_size = min(5, max(2, len(series) // 3))
 
     # Train both models
-    x_hist, x_future, x_rmse, x_name = _train_xgb(series, horizon=horizon, test_size=test_size)
-    es_hist, es_future, es_rmse, es_name = _train_es(series, horizon=horizon, test_size=test_size)
+    x_hist, x_future, x_rmse, _ = _train_xgb(series, horizon=horizon, test_size=test_size)
+    es_hist, es_future, es_rmse, _ = _train_es(series, horizon=horizon, test_size=test_size)
 
     # Decide which model to use
     candidates = []
