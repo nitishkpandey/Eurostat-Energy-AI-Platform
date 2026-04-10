@@ -1,10 +1,11 @@
-export default function Panel({ title, subtitle, actions, className = "", children }) {
+export function Panel({ title, subtitle, actions, className = "", children, eyebrow = "" }) {
   const rootClassName = ["panel", className].filter(Boolean).join(" ");
 
   return (
     <section className={rootClassName}>
       <header className="panel-header">
-        <div>
+        <div className="panel-heading">
+          {eyebrow ? <p className="panel-eyebrow">{eyebrow}</p> : null}
           <h2>{title}</h2>
           {subtitle ? <p>{subtitle}</p> : null}
         </div>
@@ -14,3 +15,5 @@ export default function Panel({ title, subtitle, actions, className = "", childr
     </section>
   );
 }
+
+export default Panel;

@@ -26,14 +26,24 @@ This version ships a React frontend with a FastAPI backend, keeping ETL + foreca
 ```text
 Eurostat-Energy-AI-Platform/
 ├── backend/
-│   ├── api/                    # FastAPI routes and service layer
+│   ├── api/                    # FastAPI routes and request schemas
 │   ├── core/                   # Shared DB utilities
 │   ├── etl/                    # ETL pipeline
-│   ├── llm_app/                # AI / semantic search
-│   ├── ml/                     # Forecasting
+│   ├── services/               # Analytics/forecast/assistant service layer
+│   │   ├── analytics/          # Overview/explorer/metadata builders
+│   │   ├── ai/                 # AI question answering + RAG modules
+│   │   └── models/             # Forecast model implementations
 │   ├── tests/                  # Unit tests
 │   └── viz/                    # Static visual exports
-├── frontend/                   # React app (Vite)
+├── frontend/
+│   └── src/
+│       ├── app/                # App shell + routing
+│       ├── features/           # Feature pages (overview/explorer/forecast/ai)
+│       ├── shared/
+│       │   ├── api/            # Frontend API client
+│       │   ├── ui/             # Shared UI components
+│       │   └── utils/          # Shared data/format helpers
+│       └── styles/             # Global theme and layout styles
 ├── outputs/                    # Generated figures
 ├── postgres/                   # DB init SQL
 ├── docker-compose.yml
@@ -60,12 +70,15 @@ Base URL: `http://localhost:8000`
 1. Create `.env` in project root:
 
 ```env
+POSTGRES_USER=energy_user
+POSTGRES_PASSWORD=energy_pass
+POSTGRES_DB=energy
+
 DB_USER=energy_user
 DB_PASS=energy_pass
 DB_HOST=db
 DB_PORT=5432
 DB_NAME=energy
-POSTGRES_PASSWORD=energy_pass
 
 PGADMIN_DEFAULT_EMAIL=admin@example.com
 PGADMIN_DEFAULT_PASSWORD=admin
@@ -109,6 +122,38 @@ npm install
 npm run dev
 ```
 
+### Run Full App With uv + Persistent Logs
+
+Run backend + frontend together with one command:
+
+```bash
+uv run run-app
+```
+
+Optional first-time frontend install:
+
+```bash
+uv run run-app --install-frontend
+```
+
+This writes persistent logs to:
+
+- `logs/main.log` (launcher/orchestration events)
+- `logs/backend.log` (FastAPI/uvicorn output)
+- `logs/frontend.log` (Vite/frontend output)
+
+Tail all logs live:
+
+```bash
+tail -f logs/main.log logs/backend.log logs/frontend.log
+```
+
+If Docker is already running on ports `8000` or `5173`, either stop it first or run on different ports:
+
+```bash
+uv run run-app --backend-port 8001 --frontend-port 5174 --frontend-api-base-url http://localhost:8001
+```
+
 ## Static Typing (mypy)
 
 Run type checks from project root:
@@ -135,24 +180,25 @@ Modes:
 ## Tests
 
 ```bash
+uv sync --extra dev
 uv run pytest backend/tests
 ```
 
 ## UI Notes
 
-The dashboard UI is intentionally dynamic and production-styled:
+The dashboard is keyboard-first and optimized for focused analysis:
 
-- Live API health status and realtime clock in the hero header
-- Animated ambient background and tab-based accent themes
-- Year-window presets and data sync controls
-- Interactive producer cards that deep-link into explorer analysis
-- Enhanced forecasting summary cards and richer chart styling
-- AI quick-question chips for faster exploratory prompts
+- Command palette and quick-create flows for faster navigation
+- Centered platform identity in the main workspace area
+- Collapsible sidebar for distraction-free exploration
+- Single-column content sections to reduce visual noise
 
 ## Engineering Notes
 
 - Shared database logic is centralized in `backend/core/database.py` (DRY)
-- API response shaping is centralized in `backend/api/services.py`
-- Frontend API access is centralized in `frontend/src/api/client.js`
+- API response shaping is centralized in `backend/services/analytics/`
+- AI assistant and forecasting model internals are centralized in `backend/services/ai/` and `backend/services/models/`
+- Frontend API access is centralized in `frontend/src/shared/api/client.js`
+- Frontend shared UI and helper logic live in `frontend/src/shared/ui/` and `frontend/src/shared/utils/`
 - Legacy Streamlit codepath has been removed
 

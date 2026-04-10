@@ -30,6 +30,9 @@ dev = [
   "types-requests==2.31.0.20240406",
 ]
 
+[project.scripts]
+run-app = "backend.run_app:main"
+
 [tool.mypy]
 python_version = "3.11"
 files = ["backend"]
