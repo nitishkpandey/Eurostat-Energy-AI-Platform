@@ -146,5 +146,8 @@ frontend/dist/
 /node_modules/
 /package-lock.json
 
+# Local planning/debug artifacts
+/.planning/
+
 # Local runtime logs
 logs/
