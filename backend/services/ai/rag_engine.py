@@ -5,48 +5,52 @@ from typing import Tuple
 
 import numpy as np
 import pandas as pd
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
+from sentence_transformers import SentenceTransformer
 
 from .build_knowledge_base import build_insights_df
 
 
 @lru_cache(maxsize=1)
-def get_index() -> Tuple[pd.DataFrame, TfidfVectorizer, np.ndarray]:
+def get_index() -> Tuple[pd.DataFrame, SentenceTransformer, np.ndarray]:
     """
     Build & cache:
       - insights_df
-      - TF-IDF vectorizer
-      - TF-IDF matrix
+      - SentenceTransformer model
+      - Embedding matrix
     """
     df = build_insights_df()
 
-    if df.empty:
-        vectorizer = TfidfVectorizer()
-        X = np.zeros((0, 1))
-        return df, vectorizer, X
+    model = SentenceTransformer("all-MiniLM-L6-v2")
 
-    vectorizer = TfidfVectorizer(
-        ngram_range=(1, 2),
-        stop_words="english",
-    )
-    X = vectorizer.fit_transform(df["insight_text"])
-    return df, vectorizer, X
+    if df.empty:
+        X = np.zeros((0, model.get_sentence_embedding_dimension()))
+        return df, model, X
+
+    # Create embeddings for the insights
+    X = model.encode(df["insight_text"].tolist(), show_progress_bar=False)
+    
+    return df, model, X
 
 
 def semantic_search(question: str, top_k: int = 5) -> str:
     """
     Return a human-readable answer based purely on
     semantic similarity between the question and the
-    precomputed insights.
+    precomputed insights using vector embeddings.
     """
-    df, vectorizer, X = get_index()
+    df, model, X = get_index()
 
     if df.empty or X.shape[0] == 0:
         return "I don't have enough processed data yet. Please run the ETL pipeline first."
 
-    q_vec = vectorizer.transform([question])
+    # Encode the user's question
+    q_vec = model.encode([question], show_progress_bar=False)
+    
+    # Calculate cosine similarity between question and all insights
     sims = cosine_similarity(q_vec, X)[0]
+    
+    # Get top_k most similar insights
     top_idx = np.argsort(sims)[::-1][:top_k]
 
     relevant = df.iloc[top_idx].copy()
@@ -68,6 +72,6 @@ def semantic_search(question: str, top_k: int = 5) -> str:
     answer = (
         "Here are the most relevant trends I found:\n\n"
         + "\n".join(lines)
-        + "\n\n(This is based on semantic similarity over precomputed country–indicator insights.)"
+        + "\n\n(This is based on semantic vector similarity over precomputed country–indicator insights.)"
     )
     return answer

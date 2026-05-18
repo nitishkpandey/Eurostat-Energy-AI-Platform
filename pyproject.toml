@@ -20,6 +20,7 @@ dependencies = [
   "xgboost==2.0.3",
   "scikit-learn==1.4.0",
   "cachetools==5.3.3",
+  "sentence-transformers==3.0.0",
 ]
 
 [project.optional-dependencies]

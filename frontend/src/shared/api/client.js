@@ -64,10 +64,10 @@ export const apiClient = {
       }),
     }),
 
-  askAi: (question) =>
+  askAi: (question, history = []) =>
     request("/api/ai/ask", {
       method: "POST",
-      body: JSON.stringify({ question }),
+      body: JSON.stringify({ question, history }),
     }),
 
   refreshCache: () =>

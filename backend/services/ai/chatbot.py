@@ -45,7 +45,7 @@ def _fastest_rising_gep_answer() -> str:
     return answer
 
 
-def answer_question(question: str) -> Dict[str, str]:
+def answer_question(question: str, history: list[dict[str, str]] | None = None) -> Dict[str, str]:
     """
     Main entrypoint used by the backend API.
 
@@ -59,6 +59,13 @@ def answer_question(question: str) -> Dict[str, str]:
         }
 
     q = question.lower().strip()
+    
+    # Formulate contextual question
+    contextual_query = question
+    if history and len(history) > 0:
+        recent = [h["content"] for h in history[-3:] if h["role"] == "user"]
+        if recent:
+            contextual_query = f"{' '.join(recent)} {question}"
 
     # Intent-based handler (faster + exact)
     if (
@@ -71,7 +78,7 @@ def answer_question(question: str) -> Dict[str, str]:
         }
 
     # Default = semantic similarity search (RAG)
-    semantic_answer = semantic_search(question)
+    semantic_answer = semantic_search(contextual_query)
 
     return {
         "answer": semantic_answer,

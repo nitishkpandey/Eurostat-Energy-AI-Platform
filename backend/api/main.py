@@ -101,4 +101,4 @@ def forecast(payload: ForecastRequest, refresh: bool = Query(default=False)) -> 
 
 @app.post("/api/ai/ask")
 def ask_ai(payload: AskRequest) -> dict:
-    return answer_question(payload.question)
+    return answer_question(payload.question, payload.history)
