@@ -21,6 +21,18 @@ services:
       timeout: 5s
       retries: 5
 
+  neo4j:
+    image: neo4j:5.18
+    container_name: eurostat_neo4j
+    restart: always
+    ports:
+      - "7474:7474" # HTTP Browser
+      - "7687:7687" # Bolt protocol
+    environment:
+      - NEO4J_AUTH=${NEO4J_USER:-neo4j}/${NEO4J_PASS:-energy_graph_pass}
+    volumes:
+      - neo4j_data:/data
+
   etl:
     build: .
     container_name: eurostat_etl
@@ -96,3 +108,4 @@ services:
 
 volumes:
   pgdata:
+  neo4j_data:

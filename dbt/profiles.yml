@@ -1,0 +1,12 @@
+eurostat_energy:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      threads: 4
+      host: localhost
+      port: 5432
+      user: eurostat_admin
+      pass: eurostat_secret
+      dbname: eurostat_db
+      schema: public
