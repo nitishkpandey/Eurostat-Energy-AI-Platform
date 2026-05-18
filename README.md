@@ -100,8 +100,7 @@ docker compose up --build
 4. Stop:
 
 ```bash
-docker compose down -v
-```
+ ```
 
 ## Local Development (uv Preferred)
 

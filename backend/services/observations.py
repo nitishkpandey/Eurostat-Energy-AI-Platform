@@ -1,13 +1,12 @@
 from __future__ import annotations
 
-from functools import lru_cache
-
+from cachetools import cached, TTLCache
 import pandas as pd
 
 from backend.core.database import load_observations_df
 
 
-@lru_cache(maxsize=1)
+@cached(cache=TTLCache(maxsize=1, ttl=900))  # 15 minutes TTL
 def _cached_observations() -> pd.DataFrame:
     df = load_observations_df()
     if df.empty:

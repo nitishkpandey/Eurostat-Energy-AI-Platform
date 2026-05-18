@@ -37,9 +37,7 @@ services:
       sh -c "
         uv sync --frozen --no-dev &&
         echo 'PostgreSQL is ready. Running ETL Pipeline...' &&
-        uv run python -m backend.etl.main --mode full-refresh &&
-        echo 'Generating Visualizations...' &&
-        uv run python -m backend.viz.viz_utils
+        uv run python -m backend.etl.main --mode full-refresh
       "
 
   backend:
@@ -83,6 +81,8 @@ services:
   pgadmin:
     image: dpage/pgadmin4
     container_name: pgadmin
+    profiles:
+      - admin
     restart: always
     ports:
       - "5050:80"

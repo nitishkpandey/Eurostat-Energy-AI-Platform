@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.api.schemas import AskRequest, ForecastRequest
 from backend.services import (
-    ask_question,
+    answer_question,
     build_forecast_payload,
     clear_observations_cache,
     get_observations,
@@ -101,4 +101,4 @@ def forecast(payload: ForecastRequest, refresh: bool = Query(default=False)) -> 
 
 @app.post("/api/ai/ask")
 def ask_ai(payload: AskRequest) -> dict:
-    return ask_question(payload.question)
+    return answer_question(payload.question)

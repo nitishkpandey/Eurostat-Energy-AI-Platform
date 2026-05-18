@@ -20,7 +20,6 @@ def build_overview(df: pd.DataFrame, start_year: int, end_year: int) -> dict[str
                 "countries_reporting": 0,
             },
             "top_producers": [],
-            "germany_trend": [],
             "selected_country_code": None,
             "country_trends": {},
         }
@@ -68,13 +67,7 @@ def build_overview(df: pd.DataFrame, start_year: int, end_year: int) -> dict[str
         for country_code, country_df in country_trend_rows.groupby("geo", sort=False)
     }
 
-    selected_country_code = "DE" if "DE" in country_trends else (top_country_codes[0] if top_country_codes else None)
-
-    germany_trend = (
-        filtered[(filtered["geo"] == "DE") & (filtered["indicator"] == "GEP")][["year", "value"]]
-        .drop_duplicates()
-        .sort_values("year")
-    )
+    selected_country_code = top_country_codes[0] if top_country_codes else None
 
     return {
         "latest_year": latest_year,
@@ -86,7 +79,6 @@ def build_overview(df: pd.DataFrame, start_year: int, end_year: int) -> dict[str
             "countries_reporting": int(latest_gep_df["geo"].nunique()) if not latest_gep_df.empty else 0,
         },
         "top_producers": to_records(top_producers),
-        "germany_trend": to_records(germany_trend),
         "selected_country_code": selected_country_code,
         "country_trends": country_trends,
     }

@@ -43,12 +43,16 @@ def normalize_observations(df: pd.DataFrame) -> pd.DataFrame:
     return normalized
 
 
+import logging
+logger = logging.getLogger(__name__)
+
 def load_observations_df(engine: Engine | None = None) -> pd.DataFrame:
     """Load observations from PostgreSQL and return a normalized dataframe."""
     active_engine = engine or get_engine()
     try:
         df = pd.read_sql("SELECT * FROM observations", active_engine)
-    except Exception:
+    except Exception as e:
+        logger.error(f"Failed to load observations from database: {e}")
         return pd.DataFrame()
 
     return normalize_observations(df)

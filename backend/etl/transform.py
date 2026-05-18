@@ -18,14 +18,6 @@ def unravel_index(flat_index: int, sizes: List[int]) -> List[int]:
     Converts a flat index from Eurostat's JSON format into multi-dimensional coordinates.
     """
     coords = []
-    # Eurostat flattening usually matches C-order relative to the 'size' array reversed in the original code logic,
-    # or the code assumes a specific packing. 
-    # The original code:
-    # for size in reversed(sizes):
-    #     coords.append(flat_index % size)
-    #     flat_index //= size
-    # return list(reversed(coords))
-    
     for size in reversed(sizes):
         coords.append(flat_index % size)
         flat_index //= size

@@ -109,7 +109,7 @@ export function OverviewPage({
       ? selectedEmbeddedTrend
       : selectedFallbackTrend.length
         ? selectedFallbackTrend
-        : safeArray(overview?.germany_trend);
+        : [];
 
   const selectedProducer = topProducers.find((producer) => producer.country_code === selectedCountryCode) || null;
   const selectedCountryLabel = selectedProducer?.country_name || selectedCountryCode || "Selected country";

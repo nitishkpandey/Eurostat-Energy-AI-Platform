@@ -9,6 +9,7 @@ import { OverviewPage } from "../features/overview/OverviewPage";
 import { apiClient } from "../shared/api/client";
 import { Layout } from "../shared/ui/Layout";
 import { asNumber, safeArray } from "../shared/utils/data";
+import { useMetadata, useOverview, useExplorer } from "../shared/hooks/apiHooks";
 
 const HEALTH_LABELS = {
   checking: "Checking API",
@@ -20,137 +21,35 @@ function App() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [metadata, setMetadata] = useState(null);
-  const [overview, setOverview] = useState(null);
-  const [explorer, setExplorer] = useState(null);
-
   const [countryCode, setCountryCode] = useState("");
   const [indicatorCode, setIndicatorCode] = useState("");
-
   const [startYear, setStartYear] = useState(0);
   const [endYear, setEndYear] = useState(0);
   const [reloadToken, setReloadToken] = useState(0);
 
-  const [loading, setLoading] = useState({
-    metadata: true,
-    overview: false,
-    explorer: false,
-  });
+  const { data: metadata, loading: loadingMetadata, error: errorMetadata } = useMetadata(reloadToken);
+  const { data: overview, loading: loadingOverview, error: errorOverview } = useOverview(startYear, endYear, reloadToken);
+  const { data: explorer, loading: loadingExplorer, error: errorExplorer } = useExplorer(countryCode, indicatorCode, startYear, endYear, reloadToken);
 
-  const [error, setError] = useState("");
+  const loading = {
+    metadata: loadingMetadata,
+    overview: loadingOverview,
+    explorer: loadingExplorer,
+  };
+
+  const error = errorMetadata || errorOverview || errorExplorer || "";
   const apiHealth = loading.metadata ? "checking" : error ? "degraded" : "healthy";
 
   useEffect(() => {
-    let mounted = true;
-
-    const loadMetadata = async () => {
-      setLoading((prev) => ({ ...prev, metadata: true }));
-      setError("");
-
-      try {
-        const response = await apiClient.metadata();
-        if (!mounted) {
-          return;
-        }
-        setMetadata(response);
-
-        if (response.min_year !== null && response.max_year !== null) {
-          setStartYear(response.min_year);
-          setEndYear(response.max_year);
-        }
-
-        setCountryCode((prev) => prev || response.countries?.[0]?.country_code || "");
-        setIndicatorCode((prev) => prev || response.indicators?.[0] || "");
-      } catch (fetchError) {
-        if (mounted) {
-          setError(fetchError.message);
-        }
-      } finally {
-        if (mounted) {
-          setLoading((prev) => ({ ...prev, metadata: false }));
-        }
+    if (metadata) {
+      if (metadata.min_year !== null && metadata.max_year !== null && !startYear && !endYear) {
+        setStartYear(metadata.min_year);
+        setEndYear(metadata.max_year);
       }
-    };
-
-    loadMetadata();
-
-    return () => {
-      mounted = false;
-    };
-  }, [reloadToken]);
-
-  useEffect(() => {
-    if (!startYear || !endYear) {
-      return;
+      setCountryCode((prev) => prev || metadata.countries?.[0]?.country_code || "");
+      setIndicatorCode((prev) => prev || metadata.indicators?.[0] || "");
     }
-
-    let mounted = true;
-
-    const loadOverview = async () => {
-      setLoading((prev) => ({ ...prev, overview: true }));
-      setError("");
-
-      try {
-        const response = await apiClient.overview({ startYear, endYear });
-        if (mounted) {
-          setOverview(response);
-        }
-      } catch (fetchError) {
-        if (mounted) {
-          setError(fetchError.message);
-        }
-      } finally {
-        if (mounted) {
-          setLoading((prev) => ({ ...prev, overview: false }));
-        }
-      }
-    };
-
-    loadOverview();
-
-    return () => {
-      mounted = false;
-    };
-  }, [startYear, endYear, reloadToken]);
-
-  useEffect(() => {
-    if (!countryCode || !indicatorCode || !startYear || !endYear) {
-      return;
-    }
-
-    let mounted = true;
-
-    const loadExplorer = async () => {
-      setLoading((prev) => ({ ...prev, explorer: true }));
-      setError("");
-
-      try {
-        const response = await apiClient.explorer({
-          countryCode,
-          indicatorCode,
-          startYear,
-          endYear,
-        });
-        if (mounted) {
-          setExplorer(response);
-        }
-      } catch (fetchError) {
-        if (mounted) {
-          setError(fetchError.message);
-        }
-      } finally {
-        if (mounted) {
-          setLoading((prev) => ({ ...prev, explorer: false }));
-        }
-      }
-    };
-
-    loadExplorer();
-
-    return () => {
-      mounted = false;
-    };
-  }, [countryCode, indicatorCode, startYear, endYear, reloadToken]);
+  }, [metadata, startYear, endYear]);
 
   const countries = safeArray(metadata?.countries);
   const indicators = safeArray(metadata?.indicators);
@@ -181,12 +80,11 @@ function App() {
   };
 
   const handleRefresh = async () => {
-    setError("");
     try {
       await apiClient.refreshCache();
       setReloadToken((prev) => prev + 1);
     } catch (refreshError) {
-      setError(refreshError.message);
+      console.error(refreshError);
     }
   };
 

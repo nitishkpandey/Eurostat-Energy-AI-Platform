@@ -142,12 +142,19 @@ Thumbs.db
 frontend/node_modules/
 frontend/dist/
 
-# Root-level accidental npm artifacts
+# Root-level package manager artifacts
 /node_modules/
 /package-lock.json
+/pnpm-lock.yaml
 
 # Local planning/debug artifacts
 /.planning/
 
 # Local runtime logs
 logs/
+
+# Generated visualization outputs (not source files)
+outputs/
+
+# pnpm store
+.pnpm-store/
