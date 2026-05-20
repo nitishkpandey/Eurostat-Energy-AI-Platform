@@ -11,18 +11,14 @@ import argparse
 import logging
 import warnings
 
-warnings.filterwarnings(
-    "ignore",
-    message=r".*Pyarrow will become a required dependency of pandas.*",
-    category=DeprecationWarning,
-    module=r"pandas(\..*)?",
-)
+warnings.simplefilter("ignore", DeprecationWarning)
 
 import pandas as pd
 
 from backend.core.database import get_engine
 from .config import DATASETS
 from .extract import fetch_dataset
+from .extract_weather import fetch_historical_weather, weather_to_observations
 from .load import init_db, load_data_to_db, wait_for_db
 from .transform import transform_dataset
 
@@ -62,6 +58,14 @@ def main() -> None:
         df = transform_dataset(dataset_code, raw_data, config["indicators"])
         if not df.empty:
             all_dataframes.append(df)
+
+    logger.info("Processing dataset: open_meteo_weather")
+    weather_raw = fetch_historical_weather()
+    weather_df = weather_to_observations(weather_raw)
+    if not weather_df.empty:
+        all_dataframes.append(weather_df)
+    else:
+        logger.warning("Skipping open_meteo_weather — no weather data returned.")
 
     # --- 3. Load ---
     if all_dataframes:
