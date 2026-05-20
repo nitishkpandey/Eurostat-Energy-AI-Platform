@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import warnings
 from math import sqrt
 from typing import Tuple
 
@@ -8,6 +9,7 @@ import pandas as pd
 from sklearn.metrics import mean_squared_error
 from xgboost import XGBRegressor
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
+from statsmodels.tools.sm_exceptions import ConvergenceWarning, ValueWarning
 
 
 def _get_series(data: pd.DataFrame, country: str, indicator: str) -> pd.Series:
@@ -121,20 +123,25 @@ def _train_es(series: pd.Series, horizon: int = 5, test_size: int = 5):
     if len(series) <= test_size + 2:
         return None, None, None, "ExponentialSmoothing (insufficient data)"
 
-    # Split into train/test for evaluation
-    train = series.iloc[:-test_size]
-    test = series.iloc[-test_size:]
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", category=ConvergenceWarning)
+        warnings.simplefilter("ignore", category=ValueWarning)
+        warnings.simplefilter("ignore", category=FutureWarning)
 
-    model = ExponentialSmoothing(train, trend="add", seasonal=None)
-    fit = model.fit()
+        # Split into train/test for evaluation
+        train = series.iloc[:-test_size]
+        test = series.iloc[-test_size:]
 
-    # Forecast the test range to compute RMSE
-    es_test_forecast = fit.forecast(test_size)
-    rmse = sqrt(mean_squared_error(test, es_test_forecast))
+        model = ExponentialSmoothing(train, trend="add", seasonal=None)
+        fit = model.fit()
 
-    # Refit on full series for future horizon
-    full_fit = ExponentialSmoothing(series, trend="add", seasonal=None).fit()
-    future_forecast = full_fit.forecast(horizon)
+        # Forecast the test range to compute RMSE
+        es_test_forecast = fit.forecast(test_size)
+        rmse = sqrt(mean_squared_error(test, es_test_forecast))
+
+        # Refit on full series for future horizon
+        full_fit = ExponentialSmoothing(series, trend="add", seasonal=None).fit()
+        future_forecast = full_fit.forecast(horizon)
 
     history_df = (
         pd.DataFrame({"year": series.index.astype(int), "value": series.values})

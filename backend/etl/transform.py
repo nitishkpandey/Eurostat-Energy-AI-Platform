@@ -1,67 +1,63 @@
-import pandas as pd
-from typing import Dict, List, Any, Optional
+"""ETL transform module.
+
+Converts raw Eurostat JSON-stat responses into clean Pandas DataFrames.
+"""
+from __future__ import annotations
+
+import logging
 from datetime import datetime
+from typing import Any, Dict, List, Optional
+
+import pandas as pd
+
+logger = logging.getLogger(__name__)
+
 
 def detect_indicator_dimension(dimensions: Dict[str, Any], indicators: List[str]) -> Optional[str]:
-    """
-    Identifies which dimension key corresponds to the 'indicator' concept
-    by checking if any of the target indicators are present in the dimension labels.
-    """
+    """Identify which dimension key corresponds to the 'indicator' concept."""
     for dim_name, dim_info in dimensions.items():
         labels = dim_info.get("category", {}).get("label", {})
         if any(ind in labels for ind in indicators):
             return dim_name
     return None
 
+
 def unravel_index(flat_index: int, sizes: List[int]) -> List[int]:
-    """
-    Converts a flat index from Eurostat's JSON format into multi-dimensional coordinates.
-    """
+    """Convert a flat index from Eurostat's JSON format into multi-dimensional coordinates."""
     coords = []
     for size in reversed(sizes):
         coords.append(flat_index % size)
         flat_index //= size
     return list(reversed(coords))
 
+
 def transform_dataset(dataset_code: str, data: Dict[str, Any], target_indicators: List[str]) -> pd.DataFrame:
-    """
-    Transforms raw JSON data from Eurostat into a clean Pandas DataFrame.
-    """
-    dim = data['dimension']
-    dim_ids = data.get('id', list(dim.keys()))
-    sizes = data['size']
-    value_data = data['value']
-    
-    labels = {k: dim[k]['category']['label'] for k in dim if 'category' in dim[k]}
-    indexes = [dim[d]['category']['index'] for d in dim_ids]
+    """Transform raw JSON data from Eurostat into a clean DataFrame."""
+    dim = data["dimension"]
+    dim_ids = data.get("id", list(dim.keys()))
+    sizes = data["size"]
+    value_data = data["value"]
+
+    labels = {k: dim[k]["category"]["label"] for k in dim if "category" in dim[k]}
+    indexes = [dim[d]["category"]["index"] for d in dim_ids]
 
     indicator_dim = detect_indicator_dimension(dim, target_indicators)
     if not indicator_dim:
-        print(f"Could not detect indicator dimension in dataset {dataset_code}")
+        logger.warning("Could not detect indicator dimension in dataset %s", dataset_code)
         return pd.DataFrame()
 
     result = []
-    
-    # Pre-calculate keys for efficiency if possible, but the original logic
-    # iterates over value_data items which are sparse.
-    
+
     for flat_index_str, val in value_data.items():
         try:
             val_float = float(val)
         except (ValueError, TypeError):
-            # value might be ":", "na" etc.
             continue
-            
+
         idx = unravel_index(int(flat_index_str), sizes)
-        
-        # Mapping dimension names to their value labels
-        # The 'indexes' list maps position -> label_key
-        # We need to look up label_key -> actual label text
-        
-        # Make a dictionary of {dimension_id: key_code}
         keys = [list(indexes[i].keys())[idx[i]] for i in range(len(idx))]
         dim_map = {dim_ids[i]: keys[i] for i in range(len(dim_ids))}
-        
+
         indicator = dim_map.get(indicator_dim)
         if indicator not in target_indicators:
             continue
@@ -75,35 +71,32 @@ def transform_dataset(dataset_code: str, data: Dict[str, Any], target_indicators
             "unit_code": dim_map.get("unit"),
             "unit_label": labels.get("unit", {}).get(dim_map.get("unit")),
             "time": dim_map.get("time"),
-            "value": val_float
+            "value": val_float,
         })
 
-    print(f"Transformed {len(result)} rows for {dataset_code}")
-    
+    logger.info("Transformed %d rows for %s.", len(result), dataset_code)
+
     if not result:
         return pd.DataFrame()
 
     df = pd.DataFrame(result)
 
-    # Cleaning
     # Remove duplicates
     num_duplicates = df.duplicated().sum()
     if num_duplicates > 0:
-        print(f"Found {num_duplicates} duplicate rows. Removing them.")
+        logger.info("Removing %d duplicate rows from %s.", num_duplicates, dataset_code)
         df = df.drop_duplicates()
 
-    # Handle missing values
-    cols_check = ['country_code', 'country_name', 'indicator_code', 'indicator_label', 'time', 'value']
-    missing_count = df[cols_check].isnull().sum().sum()
+    # Drop rows with missing critical values
+    critical_cols = ["country_code", "country_name", "indicator_code", "indicator_label", "time", "value"]
+    missing_count = df[critical_cols].isnull().sum().sum()
     if missing_count > 0:
-        print("Missing values detected. Dropping rows with missing critical values.")
-        df = df.dropna(subset=cols_check)
+        logger.info("Dropping rows with %d missing critical values in %s.", missing_count, dataset_code)
+        df = df.dropna(subset=critical_cols)
 
-    # Parse date
-    df['time'] = pd.to_datetime(df['time'], format='%Y')
-    
-    # Add timestamp
+    # Parse date and add load timestamp
+    df["time"] = pd.to_datetime(df["time"], format="%Y")
     df["load_timestamp"] = datetime.now()
 
-    print(f"Cleaned data: {len(df)} rows remaining for {dataset_code}.")
+    logger.info("Cleaned data: %d rows remaining for %s.", len(df), dataset_code)
     return df

@@ -73,6 +73,12 @@ pnpm dev
 - **Frontend Dashboard:** `http://localhost:5173`
 - **Backend API & Swagger:** `http://localhost:8000/docs`
 
+On Windows, you can also start everything without activating the virtual environment or invoking npm directly:
+```bash
+uv run python -m backend.dev
+```
+The launcher will start the frontend with Docker when available, or fall back to local npm if Docker is unavailable.
+
 ---
 
 ## 🧠 The AI Agent

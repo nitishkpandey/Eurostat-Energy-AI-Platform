@@ -68,7 +68,8 @@ def build_insights_df() -> pd.DataFrame:
         """
     )
 
-    df = pd.read_sql(query, engine)
+    with engine.connect() as conn:
+        df = pd.read_sql(query, conn)
 
     if df.empty:
         return pd.DataFrame(

@@ -1,5 +1,7 @@
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:8000";
 
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const buildQueryString = (params = {}) => {
   const search = new URLSearchParams();
 
@@ -14,26 +16,45 @@ const buildQueryString = (params = {}) => {
 };
 
 const request = async (path, options = {}) => {
-  const response = await fetch(`${API_BASE}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers ?? {}),
-    },
-    ...options,
-  });
+  const method = String(options.method ?? "GET").toUpperCase();
+  const retries = method === "GET" ? 2 : 0;
+  const delayMs = 400;
 
-  if (!response.ok) {
-    let message = "Request failed";
+  let lastError;
+
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
     try {
-      const payload = await response.json();
-      message = payload.detail ?? message;
-    } catch {
-      message = `${message} (${response.status})`;
+      const response = await fetch(`${API_BASE}${path}`, {
+        headers: {
+          "Content-Type": "application/json",
+          ...(options.headers ?? {}),
+        },
+        ...options,
+      });
+
+      if (!response.ok) {
+        let message = "Request failed";
+        try {
+          const payload = await response.json();
+          message = payload.detail ?? message;
+        } catch {
+          message = `${message} (${response.status})`;
+        }
+        throw new Error(message);
+      }
+
+      return response.json();
+    } catch (error) {
+      lastError = error;
+      if (attempt < retries && (error instanceof TypeError || error?.message === "Failed to fetch")) {
+        await sleep(delayMs * (attempt + 1));
+        continue;
+      }
+      throw error;
     }
-    throw new Error(message);
   }
 
-  return response.json();
+  throw lastError;
 };
 
 export const apiClient = {

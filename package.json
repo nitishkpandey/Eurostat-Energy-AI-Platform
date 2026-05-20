@@ -3,14 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently --kill-others-on-fail --names \"db,backend,frontend\" --prefix-colors \"blue,green,yellow\" \"npm:dev:db\" \"npm:dev:backend\" \"npm:dev:frontend\"",
-    "dev:db": "docker compose up db --wait",
+    "dev": "concurrently --kill-others-on-fail --names \"etl,backend,frontend\" --prefix-colors \"blue,green,yellow\" \"npm:dev:etl\" \"npm:dev:backend\" \"npm:dev:frontend\"",
+    "dev:etl": "uv run python -m backend.etl.main --mode full-refresh",
     "dev:backend": "uv run uvicorn backend.api.main:app --reload --host 0.0.0.0 --port 8000",
-    "dev:frontend": "cd frontend && pnpm install --frozen-lockfile && pnpm dev",
+    "dev:frontend": "cd frontend && npm install --silent && npm run dev",
     "etl": "uv run python -m backend.etl.main --mode full-refresh",
     "etl:append": "uv run python -m backend.etl.main --mode append",
-    "test": "uv run pytest backend/tests",
-    "lint": "uv run mypy",
     "docker:up": "docker compose up --build",
     "docker:down": "docker compose down"
   },

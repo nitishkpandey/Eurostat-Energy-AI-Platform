@@ -1,11 +1,17 @@
 from __future__ import annotations
 
+import os
+import warnings
 from functools import lru_cache
 from typing import Tuple
 
 import numpy as np
 import pandas as pd
 from sklearn.metrics.pairwise import cosine_similarity
+
+os.environ.setdefault("HF_HUB_DISABLE_SYMLINKS_WARNING", "1")
+os.environ.setdefault("HF_HUB_DISABLE_PROGRESS_BARS", "1")
+
 from sentence_transformers import SentenceTransformer
 
 from .build_knowledge_base import build_insights_df
@@ -21,7 +27,13 @@ def get_index() -> Tuple[pd.DataFrame, SentenceTransformer, np.ndarray]:
     """
     df = build_insights_df()
 
-    model = SentenceTransformer("all-MiniLM-L6-v2")
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            category=UserWarning,
+            module="huggingface_hub.file_download",
+        )
+        model = SentenceTransformer("all-MiniLM-L6-v2")
 
     if df.empty:
         X = np.zeros((0, model.get_sentence_embedding_dimension()))

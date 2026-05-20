@@ -9,6 +9,14 @@ from __future__ import annotations
 
 import argparse
 import logging
+import warnings
+
+warnings.filterwarnings(
+    "ignore",
+    message=r".*Pyarrow will become a required dependency of pandas.*",
+    category=DeprecationWarning,
+    module=r"pandas(\..*)?",
+)
 
 import pandas as pd
 
@@ -20,7 +28,7 @@ from .transform import transform_dataset
 
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+    format="%(levelname)s | %(name)s | %(message)s",
 )
 logger = logging.getLogger(__name__)
 
@@ -45,7 +53,6 @@ def main() -> None:
 
     for dataset_code, config in DATASETS.items():
         logger.info("Processing dataset: %s", dataset_code)
-        print(f"Processing dataset: {dataset_code}...")
 
         raw_data = fetch_dataset(dataset_code, config["url"])
         if not raw_data:
@@ -62,7 +69,6 @@ def main() -> None:
         load_data_to_db(full_df, engine)
     else:
         logger.warning("No data transformed successfully.")
-        print("No data transformed successfully.")
 
 
 if __name__ == "__main__":

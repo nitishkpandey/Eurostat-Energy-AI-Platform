@@ -1,6 +1,31 @@
 import { useState, useEffect } from "react";
 import { apiClient } from "../api/client";
 
+export function useApiHealth() {
+  const [status, setStatus] = useState("checking");
+
+  useEffect(() => {
+    let mounted = true;
+
+    const checkHealth = async () => {
+      try {
+        await apiClient.health();
+        if (mounted) setStatus("healthy");
+      } catch {
+        if (mounted) setStatus("degraded");
+      }
+    };
+
+    checkHealth();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  return status;
+}
+
 export function useMetadata(reloadToken) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);

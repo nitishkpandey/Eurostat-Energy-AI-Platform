@@ -1,0 +1,38 @@
+# Exclude local Python virtual environments
+.venv/
+venv/
+ENV/
+
+# Exclude Node dependencies and builds
+node_modules/
+frontend/node_modules/
+frontend/dist/
+
+# Exclude Git folders
+.git/
+.gitignore
+
+# Exclude Python caches
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Exclude large development logs and outputs
+logs/
+*.log
+outputs/
+
+# Exclude local environmental secrets
+.env
+.env.example
+
+# Exclude other local tools/docs
+dbt/
+airflow/
+Dockerfile
+docker-compose.yml
+README.md

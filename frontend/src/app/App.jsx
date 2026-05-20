@@ -9,7 +9,7 @@ import { OverviewPage } from "../features/overview/OverviewPage";
 import { apiClient } from "../shared/api/client";
 import { Layout } from "../shared/ui/Layout";
 import { asNumber, safeArray } from "../shared/utils/data";
-import { useMetadata, useOverview, useExplorer } from "../shared/hooks/apiHooks";
+import { useApiHealth, useMetadata, useOverview, useExplorer } from "../shared/hooks/apiHooks";
 
 const HEALTH_LABELS = {
   checking: "Checking API",
@@ -27,6 +27,7 @@ function App() {
   const [endYear, setEndYear] = useState(0);
   const [reloadToken, setReloadToken] = useState(0);
 
+  const apiHealth = useApiHealth();
   const { data: metadata, loading: loadingMetadata, error: errorMetadata } = useMetadata(reloadToken);
   const { data: overview, loading: loadingOverview, error: errorOverview } = useOverview(startYear, endYear, reloadToken);
   const { data: explorer, loading: loadingExplorer, error: errorExplorer } = useExplorer(countryCode, indicatorCode, startYear, endYear, reloadToken);
@@ -38,7 +39,6 @@ function App() {
   };
 
   const error = errorMetadata || errorOverview || errorExplorer || "";
-  const apiHealth = loading.metadata ? "checking" : error ? "degraded" : "healthy";
 
   useEffect(() => {
     if (metadata) {

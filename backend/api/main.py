@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import logging
 import os
+import time
+
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
 
 from backend.api.schemas import AskRequest, ForecastRequest
 from backend.services import (
@@ -13,6 +18,8 @@ from backend.services import (
     resolve_year_bounds,
 )
 from backend.services.analytics import build_explorer, build_metadata, build_overview
+
+logger = logging.getLogger("backend.api")
 
 
 app = FastAPI(
@@ -44,6 +51,28 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+class RequestLoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        start_time = time.perf_counter()
+        response = None
+        try:
+            response = await call_next(request)
+            return response
+        finally:
+            duration_ms = (time.perf_counter() - start_time) * 1000
+            status_code = getattr(response, "status_code", 500)
+            logger.info(
+                "%s %s -> %s (%.1f ms)",
+                request.method,
+                request.url.path,
+                status_code,
+                duration_ms,
+            )
+
+
+app.add_middleware(RequestLoggingMiddleware)
 
 
 @app.get("/api/health")

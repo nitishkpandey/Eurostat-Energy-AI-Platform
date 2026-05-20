@@ -31,7 +31,8 @@ def load_data_from_pg() -> pd.DataFrame:
     WHERE year = 2023 -- Limit to recent year for graph simplicity
     """
     try:
-        return pd.read_sql(query, engine)
+        with engine.connect() as conn:
+            return pd.read_sql(query, conn)
     except Exception as e:
         logger.error(f"Failed to read from PostgreSQL: {e}")
         return pd.DataFrame()

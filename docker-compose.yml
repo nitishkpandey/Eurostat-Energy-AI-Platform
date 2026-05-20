@@ -5,7 +5,7 @@ services:
     container_name: eurostat_postgres
     restart: always
     ports:
-      - "5432:5432"
+      - "5433:5432"
     env_file:
       - .env
     environment:
@@ -78,8 +78,6 @@ services:
   frontend:
     image: node:20-alpine
     container_name: eurostat_frontend
-    depends_on:
-      - backend
     ports:
       - "5173:5173"
     working_dir: /app/frontend
